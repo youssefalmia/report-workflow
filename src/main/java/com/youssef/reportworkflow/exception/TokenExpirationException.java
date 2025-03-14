@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.*;
  * @author Jozef
  */
 @ResponseStatus(HttpStatus.FORBIDDEN)
-public class UnauthorizedUserException extends RuntimeException {
-    public UnauthorizedUserException() {
-        super("User is not authorized to perform this action");
+public class TokenExpirationException extends RuntimeException {
+    public TokenExpirationException(){
+        super("JWT Token has expired");
     }
 }

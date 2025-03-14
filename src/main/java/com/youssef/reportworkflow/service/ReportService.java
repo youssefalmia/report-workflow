@@ -25,7 +25,7 @@ public class ReportService {
     @PreAuthorize("hasRole('OWNER')")
     public Report startReportWorkflow(String title, Long ownerId) {
         User owner = userRepository.findById(ownerId)
-                .orElseThrow(() -> new IllegalArgumentException("Owner not found"));
+                .orElseThrow(UserNotFoundException::new);
 
         Report report = new Report();
         report.setTitle(title);
@@ -59,10 +59,10 @@ public class ReportService {
         validateReportState(reportId, ReportState.CREATED);
 
         User reviewer = userRepository.findById(reviewerId)
-                .orElseThrow(() -> new IllegalArgumentException("Reviewer not found"));
+                .orElseThrow(UserNotFoundException::new);
 
         if (!reviewer.getRoles().contains(Role.REVIEWER)) {
-            throw new UnauthorizedUserException();
+            throw new ReviewerPermissionException();
         }
 
         report.setReviewer(reviewer);
@@ -83,10 +83,10 @@ public class ReportService {
         validateReportState(reportId, ReportState.REVIEWED);
 
         User validator = userRepository.findById(validatorId)
-                .orElseThrow(() -> new IllegalArgumentException("Validator not found"));
+                .orElseThrow(UserNotFoundException::new);
 
         if (!validator.getRoles().contains(Role.VALIDATOR)) {
-            throw new UnauthorizedUserException();
+            throw new ValidatorPermissionException();
         }
 
         transitionLogRepository.save(new ReportTransitionLog(report, validator, isApproved ? ReportState.VALIDATED : ReportState.REFUSED));
@@ -102,7 +102,7 @@ public class ReportService {
      */
     private Report getReportById(Long reportId) {
         Report report = reportRepository.findById(reportId)
-                .orElseThrow(() -> new IllegalArgumentException("Report not found"));
+                .orElseThrow(() -> new ReportNotFoundException(reportId));
 
         // Fetch latest state from BPMN
         ReportState workflowState = workflowService.getReportState(reportId);
@@ -120,9 +120,7 @@ public class ReportService {
     private void validateReportState(Long reportId, ReportState expectedState) {
         ReportState currentState = workflowService.getReportState(reportId);
         if (currentState != expectedState) {
-            throw new IllegalStateException(
-                    "Invalid state transition. Expected: " + expectedState + ", but was: " + currentState
-            );
+            throw new InvalidReportStateException(expectedState,currentState);
         }
     }
 }

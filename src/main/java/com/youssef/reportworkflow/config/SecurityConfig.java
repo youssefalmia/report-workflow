@@ -43,8 +43,12 @@ public class SecurityConfig implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
+                .headers(httpSecurityHeadersConfigurer -> httpSecurityHeadersConfigurer.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/register", "/auth/login", "/swagger-ui/**", "/v3/api-docs/**","/camunda/**", "/h2-console").permitAll()
+                        .requestMatchers("/auth/register",
+                                "/auth/login", "/swagger-ui/**",
+                                "/v3/api-docs/**","/camunda/**",
+                                "/h2-console/**").permitAll()
                         .requestMatchers("/reports/create").hasRole("OWNER") // Only Owners can create reports
                         .requestMatchers("/reports/review").hasRole("REVIEWER") // Only Reviewers can review reports
                         .requestMatchers("/reports/validate").hasRole("VALIDATOR") // Only Validators can validate/refuse

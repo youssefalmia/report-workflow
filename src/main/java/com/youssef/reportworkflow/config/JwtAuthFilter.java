@@ -1,13 +1,10 @@
 package com.youssef.reportworkflow.config;
 
-import com.youssef.reportworkflow.domain.*;
-import com.youssef.reportworkflow.domain.User;
 import com.youssef.reportworkflow.utils.*;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import lombok.*;
 import org.springframework.security.authentication.*;
-import org.springframework.security.core.authority.*;
 import org.springframework.security.core.context.*;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.web.authentication.*;

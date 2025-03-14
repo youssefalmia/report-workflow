@@ -15,7 +15,7 @@ import java.security.*;
  * @author Jozef
  */
 @RestController
-@RequestMapping("/api/reports")
+@RequestMapping("/api/v1/reports")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth") // for swagger auth header
 public class ReportController {

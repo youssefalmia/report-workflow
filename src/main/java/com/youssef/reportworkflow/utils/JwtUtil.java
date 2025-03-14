@@ -2,11 +2,14 @@ package com.youssef.reportworkflow.utils;
 
 import com.youssef.reportworkflow.domain.User;
 import com.youssef.reportworkflow.domain.enums.*;
+import com.youssef.reportworkflow.exception.*;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.*;
 import io.jsonwebtoken.security.*;
 import jakarta.annotation.*;
+import lombok.extern.slf4j.*;
+import org.slf4j.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.*;
@@ -19,13 +22,13 @@ import java.util.function.*;
  * @author Jozef
  */
 @Component
+@Slf4j
 public class JwtUtil {
     @Value("${jwt.secret}") // Load from application.properties
     private String secretKey;
 
     @Value("${jwt.expiration.access-token}") // Load from application.properties
     private long accessTokenExpiration;
-
     private SecretKey signingKey;
 
     @PostConstruct
@@ -49,7 +52,8 @@ public class JwtUtil {
         return extractClaim(token, Claims::getSubject);
     }
     public String extractUserId(String token) {
-        return extractClaim(token, claims -> claims.get("userId", String.class));
+        Object userId = extractClaim(token, claims -> claims.get("userId"));
+        return userId != null ? String.valueOf(userId) : null;
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
@@ -83,9 +87,11 @@ public class JwtUtil {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (ExpiredJwtException e) {
-            throw new RuntimeException("Token expired.");
+            log.warn("JWT Token expired: {}", e.getMessage());
+            throw new TokenExpirationException();
         } catch (JwtException e) {
-            throw new RuntimeException("Invalid token.");
+            log.warn("JWT Token is invalid: {}", e.getMessage());
+            throw new TokenValidationException();
         }
     }
 }

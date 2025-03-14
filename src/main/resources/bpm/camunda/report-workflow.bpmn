@@ -2,6 +2,7 @@
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1cl38du" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.33.1" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.22.0">
   <bpmn:message id="Message_02oudja" name="StartWorkflowMessage" />
   <bpmn:collaboration id="Collaboration_19iv7jg">
+    <bpmn:extensionElements />
     <bpmn:participant id="Participant_0uahx12" name="Report Lifecycle Management" processRef="reportWorkflow" />
   </bpmn:collaboration>
   <bpmn:process id="reportWorkflow" name="reportWorkflow" isExecutable="true" camunda:historyTimeToLive="90">
@@ -24,10 +25,10 @@
     <bpmn:sequenceFlow id="Flow_0piycdo" sourceRef="createTask" targetRef="reviewTask" />
     <bpmn:sequenceFlow id="Flow_0xs2lut" sourceRef="reviewTask" targetRef="validateTask" />
     <bpmn:sequenceFlow id="Flow_0j40kbk" name="Approved" sourceRef="exclusiveGatewayDecision" targetRef="endValidated">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{isApproved}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{isApproved  == true}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1wf5q4a" name="Refused" sourceRef="exclusiveGatewayDecision" targetRef="endRefused">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not isApproved}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{isApproved == false}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:exclusiveGateway id="exclusiveGatewayDecision" name="Report approved?">
       <bpmn:extensionElements />
@@ -42,7 +43,7 @@
     <bpmn:endEvent id="endValidated" name="Report validated">
       <bpmn:incoming>Flow_0j40kbk</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:userTask id="createTask" name="Create Report">
+    <bpmn:userTask id="createTask" name="Create Report" camunda:assignee="{ownerId}">
       <bpmn:extensionElements>
         <camunda:taskListener class="com.youssef.reportworkflow.service.camunda.ReportStateListener" event="create" id="createTask" />
       </bpmn:extensionElements>
@@ -52,14 +53,14 @@
     <bpmn:startEvent id="startEvent" name="Start workflow">
       <bpmn:outgoing>Flow_0p9ss79</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:userTask id="reviewTask" name="Review Report">
+    <bpmn:userTask id="reviewTask" name="Review Report" camunda:candidateGroups="REVIEWER">
       <bpmn:extensionElements>
         <camunda:taskListener class="com.youssef.reportworkflow.service.camunda.ReportStateListener" event="complete" id="reviewTask" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0piycdo</bpmn:incoming>
       <bpmn:outgoing>Flow_0xs2lut</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="validateTask" name="Validate Report">
+    <bpmn:userTask id="validateTask" name="Validate Report" camunda:candidateGroups="VALIDATOR">
       <bpmn:extensionElements>
         <camunda:taskListener class="com.youssef.reportworkflow.service.camunda.ReportStateListener" event="complete" id="validateTask" />
       </bpmn:extensionElements>
@@ -73,16 +74,16 @@
         <dc:Bounds x="155" y="120" width="755" height="520" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Lane_0b298sj_di" bpmnElement="Lane_0b298sj" isHorizontal="true">
-        <dc:Bounds x="185" y="120" width="725" height="160" />
+      <bpmndi:BPMNShape id="Lane_1fg71ko_di" bpmnElement="Lane_1fg71ko" isHorizontal="true">
+        <dc:Bounds x="185" y="280" width="725" height="130" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Lane_0mda9vc_di" bpmnElement="Lane_0mda9vc" isHorizontal="true">
         <dc:Bounds x="185" y="410" width="725" height="230" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Lane_1fg71ko_di" bpmnElement="Lane_1fg71ko" isHorizontal="true">
-        <dc:Bounds x="185" y="280" width="725" height="130" />
+      <bpmndi:BPMNShape id="Lane_0b298sj_di" bpmnElement="Lane_0b298sj" isHorizontal="true">
+        <dc:Bounds x="185" y="120" width="725" height="160" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_08czjsa_di" bpmnElement="exclusiveGatewayDecision" isMarkerVisible="true">
