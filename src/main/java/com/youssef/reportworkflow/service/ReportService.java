@@ -2,11 +2,14 @@ package com.youssef.reportworkflow.service;
 
 import com.youssef.reportworkflow.domain.*;
 import com.youssef.reportworkflow.domain.enums.*;
+import com.youssef.reportworkflow.dto.*;
 import com.youssef.reportworkflow.exception.*;
+import com.youssef.reportworkflow.mapper.*;
 import lombok.*;
 import org.springframework.security.access.prepost.*;
 import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.*;
+import org.springframework.transaction.support.*;
 
 import java.time.*;
 
@@ -18,12 +21,11 @@ import java.time.*;
 public class ReportService {
     private final ReportRepository reportRepository;
     private final UserRepository userRepository;
-    private final ReportTransitionLogRepository transitionLogRepository;
     private final ReportWorkflowService workflowService;
-
+    private final ReportMapper reportMapper;
     @Transactional
     @PreAuthorize("hasRole('OWNER')")
-    public Report startReportWorkflow(String title, Long ownerId) {
+    public ReportDTO startReportWorkflow(String title, Long ownerId) {
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(UserNotFoundException::new);
 
@@ -33,26 +35,29 @@ public class ReportService {
 
         Report savedReport = reportRepository.save(report);
 
-        // Start workflow, workflowService manages the state using BPM
-        workflowService.startWorkflow(savedReport.getId(), ownerId);
+        // rollback mechanism if the workflow fails
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                // Start workflow, workflowService manages the state using BPM
+                workflowService.startWorkflow(savedReport.getId(), ownerId);
+            }
+        });
 
-        return savedReport;
+
+        return new ReportDTO(report.getId(), report.getTitle(), owner.getUsername(), ReportState.CREATED);
     }
 
     @Transactional
     @PreAuthorize("hasRole('OWNER')")
     public void confirmReportCreation(Long reportId, Long ownerId) {
-        Report report = getReportById(reportId);
-
         workflowService.createReport(reportId, ownerId);
-
-        transitionLogRepository.save(new ReportTransitionLog(report, report.getOwner(), ReportState.CREATED));
     }
 
 
     @Transactional
     @PreAuthorize("hasRole('REVIEWER')")
-    public Report reviewReport(Long reportId, Long reviewerId) {
+    public ReportDTO reviewReport(Long reportId, Long reviewerId) {
         Report report = getReportById(reportId);
 
         // Ensure the state is valid using BPMN instead of database
@@ -65,18 +70,15 @@ public class ReportService {
             throw new ReviewerPermissionException();
         }
 
-        report.setReviewer(reviewer);
-        transitionLogRepository.save(new ReportTransitionLog(report, reviewer, ReportState.REVIEWED));
-
         // Call workflow service to transition the state
         workflowService.reviewReport(reportId, reviewerId);
 
-        return report;
+        return reportMapper.toDTO(report);
     }
 
     @Transactional
     @PreAuthorize("hasRole('VALIDATOR')")
-    public Report validateOrRefuseReport(Long reportId, Long validatorId, boolean isApproved) {
+    public ReportDTO validateOrRefuseReport(Long reportId, Long validatorId, boolean isApproved) {
         Report report = getReportById(reportId);
 
         // Ensure the state is valid using BPMN instead of database
@@ -89,12 +91,10 @@ public class ReportService {
             throw new ValidatorPermissionException();
         }
 
-        transitionLogRepository.save(new ReportTransitionLog(report, validator, isApproved ? ReportState.VALIDATED : ReportState.REFUSED));
-
         // Delegate decision processing to workflow service
         workflowService.processValidationDecision(reportId, validatorId, isApproved);
 
-        return report;
+        return reportMapper.toDTO(report);
     }
 
     /**

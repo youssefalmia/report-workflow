@@ -1,5 +1,6 @@
 package com.youssef.reportworkflow.dto.authentication;
 
+import com.youssef.reportworkflow.dto.*;
 import lombok.*;
 
 /**
@@ -10,4 +11,5 @@ import lombok.*;
 @Setter
 public class AuthResponse {
     private String token;
+    private UserDTO userDTO;
 }

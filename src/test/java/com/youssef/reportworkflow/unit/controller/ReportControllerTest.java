@@ -4,6 +4,7 @@ import com.youssef.reportworkflow.config.*;
 import com.youssef.reportworkflow.controllers.*;
 import com.youssef.reportworkflow.domain.*;
 import com.youssef.reportworkflow.domain.enums.*;
+import com.youssef.reportworkflow.dto.*;
 import com.youssef.reportworkflow.service.*;
 import org.springframework.test.context.bean.override.mockito.*;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ class ReportControllerTest {
 
     @Test
     void testCreateReportAndStartWorkflow_Success() throws Exception {
-        Report mockReport = new Report(1L, "Sample Report", ReportState.CREATED, null, null, null, null, null, null);
+        ReportDTO mockReport = new ReportDTO(1L, "Sample Report",null ,ReportState.CREATED);
 
         Mockito.when(userContext.getAuthenticatedUserId()).thenReturn(1L);
         Mockito.when(reportService.startReportWorkflow(anyString(), anyLong())).thenReturn(mockReport);

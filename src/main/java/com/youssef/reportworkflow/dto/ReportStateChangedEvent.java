@@ -11,6 +11,7 @@ import lombok.*;
 public class ReportStateChangedEvent {
     private final Object source;
     private final Long reportId;
+    private final Long userId;
     private final ReportState newState;
 }
 

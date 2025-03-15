@@ -11,33 +11,33 @@ import org.springframework.stereotype.*;
 @Service
 public class ReportWorkflowService {
 
-    private final ReportWorkflowFactory workflowFactory;
-    private final String engineType;
+    private final IReportWorkflowStrategy workflowStrategy;
 
     @Autowired
     public ReportWorkflowService(ReportWorkflowFactory workflowFactory,
                                  @Value("${workflow.engine}") String engineType) {
-        this.workflowFactory = workflowFactory;
-        this.engineType = engineType;
+        // cache workflowStrategy at startup so that we access it directly on each method ( no map lookups )
+        this.workflowStrategy = workflowFactory.getWorkflowStrategy(engineType);
     }
 
     public String startWorkflow(Long reportId, Long ownerId) {
-        return workflowFactory.getWorkflowStrategy(engineType).startWorkflow(reportId, ownerId);
+        return workflowStrategy.startWorkflow(reportId, ownerId);
     }
 
     public void createReport(Long reportId, Long ownerId) {
-        workflowFactory.getWorkflowStrategy(engineType).createReport(reportId, ownerId);
+        workflowStrategy.createReport(reportId, ownerId);
     }
 
     public void reviewReport(Long reportId, Long reviewerId) {
-        workflowFactory.getWorkflowStrategy(engineType).reviewReport(reportId, reviewerId);
+        workflowStrategy.reviewReport(reportId, reviewerId);
     }
 
     public void processValidationDecision(Long reportId, Long validatorId, boolean isApproved) {
-        workflowFactory.getWorkflowStrategy(engineType).processValidationDecision(reportId, validatorId, isApproved);
+        workflowStrategy.processValidationDecision(reportId, validatorId, isApproved);
     }
+
     public ReportState getReportState(Long reportId) {
-        return workflowFactory.getWorkflowStrategy(engineType).getReportState(reportId);
+        return workflowStrategy.getReportState(reportId);
     }
 
 }

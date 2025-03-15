@@ -25,10 +25,10 @@
     <bpmn:sequenceFlow id="Flow_0piycdo" sourceRef="createTask" targetRef="reviewTask" />
     <bpmn:sequenceFlow id="Flow_0xs2lut" sourceRef="reviewTask" targetRef="validateTask" />
     <bpmn:sequenceFlow id="Flow_0j40kbk" name="Approved" sourceRef="exclusiveGatewayDecision" targetRef="endValidated">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{isApproved  == true}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{isApproved}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1wf5q4a" name="Refused" sourceRef="exclusiveGatewayDecision" targetRef="endRefused">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{isApproved == false}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{!isApproved}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:exclusiveGateway id="exclusiveGatewayDecision" name="Report approved?">
       <bpmn:extensionElements />
@@ -38,14 +38,20 @@
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_0dq3bi1" sourceRef="validateTask" targetRef="exclusiveGatewayDecision" />
     <bpmn:endEvent id="endRefused" name="Report refused">
+      <bpmn:extensionElements>
+        <camunda:executionListener class="com.youssef.reportworkflow.service.camunda.ReportStateListener" event="end" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1wf5q4a</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:endEvent id="endValidated" name="Report validated">
+      <bpmn:extensionElements>
+        <camunda:executionListener class="com.youssef.reportworkflow.service.camunda.ReportStateListener" event="end" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_0j40kbk</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:userTask id="createTask" name="Create Report" camunda:assignee="{ownerId}">
       <bpmn:extensionElements>
-        <camunda:taskListener class="com.youssef.reportworkflow.service.camunda.ReportStateListener" event="create" id="createTask" />
+        <camunda:taskListener class="com.youssef.reportworkflow.service.camunda.ReportStateListener" event="complete" id="createTask" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0p9ss79</bpmn:incoming>
       <bpmn:outgoing>Flow_0piycdo</bpmn:outgoing>
@@ -61,9 +67,7 @@
       <bpmn:outgoing>Flow_0xs2lut</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="validateTask" name="Validate Report" camunda:candidateGroups="VALIDATOR">
-      <bpmn:extensionElements>
-        <camunda:taskListener class="com.youssef.reportworkflow.service.camunda.ReportStateListener" event="complete" id="validateTask" />
-      </bpmn:extensionElements>
+      <bpmn:extensionElements />
       <bpmn:incoming>Flow_0xs2lut</bpmn:incoming>
       <bpmn:outgoing>Flow_0dq3bi1</bpmn:outgoing>
     </bpmn:userTask>

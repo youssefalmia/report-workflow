@@ -4,6 +4,7 @@ import com.youssef.reportworkflow.utils.*;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.context.*;
 import org.springframework.security.core.userdetails.*;
@@ -18,6 +19,7 @@ import java.io.*;
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final UserDetailsImpl userDetailsService;
