@@ -23,6 +23,7 @@ public class ReportService {
     private final UserRepository userRepository;
     private final ReportWorkflowService workflowService;
     private final ReportMapper reportMapper;
+
     @Transactional
     @PreAuthorize("hasRole('OWNER')")
     public ReportDTO startReportWorkflow(String title, Long ownerId) {
@@ -35,15 +36,8 @@ public class ReportService {
 
         Report savedReport = reportRepository.save(report);
 
-        // rollback mechanism if the workflow fails
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                // Start workflow, workflowService manages the state using BPM
-                workflowService.startWorkflow(savedReport.getId(), ownerId);
-            }
-        });
-
+        // Start workflow, workflowService manages the state using BPM
+        workflowService.startWorkflow(savedReport.getId(), ownerId);
 
         return new ReportDTO(report.getId(), report.getTitle(), owner.getUsername(), ReportState.CREATED);
     }
@@ -120,7 +114,7 @@ public class ReportService {
     private void validateReportState(Long reportId, ReportState expectedState) {
         ReportState currentState = workflowService.getReportState(reportId);
         if (currentState != expectedState) {
-            throw new InvalidReportStateException(expectedState,currentState);
+            throw new InvalidReportStateException(expectedState, currentState);
         }
     }
 }

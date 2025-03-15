@@ -6,6 +6,8 @@ import com.youssef.reportworkflow.init.*;
 import jakarta.inject.*;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.*;
+import org.springframework.boot.jdbc.*;
+import org.springframework.boot.test.autoconfigure.jdbc.*;
 import org.springframework.boot.test.autoconfigure.orm.jpa.*;
 import org.springframework.boot.test.context.*;
 import org.springframework.context.annotation.*;
@@ -18,6 +20,7 @@ import java.util.*;
  * @author Jozef
  */
 @SpringBootTest
+@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 class UserRepositoryTest {
     @Inject
     UserRepository userRepository;
@@ -30,8 +33,10 @@ class UserRepositoryTest {
     @Test
     @DisplayName("Should find User by username")
     void shouldFindUserByUsername() {
+        // Arrange and act = given and when
         Optional<User> result = userRepository.findByUsername(TestDataInitializer.OWNER_USER);
 
+        // Assert = then
         assertThat(result).isPresent();
         assertThat(result.get().getUsername()).isEqualTo(TestDataInitializer.OWNER_USER);
     }
@@ -39,8 +44,9 @@ class UserRepositoryTest {
     @Test
     @DisplayName("Should not find User for a non-existing username")
     void shouldNotFindNonExistingUserByUsername() {
+        // Arrange and act
         Optional<User> result = userRepository.findByUsername("non_existing_user");
-
+        // Assert
         assertThat(result).isEmpty();
     }
 }
