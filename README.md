@@ -194,7 +194,7 @@ For this project, **Camunda** was chosen as the BPMN engine due to its **scalabi
 
 ### Understanding the BPMN Diagram
 
-![BPMN](https://github.com/youssefalmia/report-workflow/blob/main/resources/bpm/camunda/bpmn-camunda.png)
+![BPMN](https://github.com/youssefalmia/report-workflow/blob/main/src/main/resources/bpm/camunda/bpmn-camunda.png)
 
 The workflow consists of **three user tasks**:
 - **Create Report** (Owners) – Any user with the **Owner** role can initiate this.
@@ -466,7 +466,7 @@ With this setup, the **system remains secure, efficient, and easy to maintain**,
 
 ## Class Diagram Overview
 
-![Class diagram](https://github.com/youssefalmia/report-workflow/blob/main/resources/bpm/camunda/class-diagram.png)
+![Class diagram](https://github.com/youssefalmia/report-workflow/blob/main/src/main/resources/bpm/camunda/class-diagram.png)
 
 
 The class diagram focuses on the **core domain model**, representing the essential entities and their relationships within the system.
@@ -480,7 +480,7 @@ The class diagram focuses on the **core domain model**, representing the essenti
 
 ## Report Lifecycle State Diagram
 
-![State diagram](https://github.com/youssefalmia/report-workflow/blob/main/resources/bpm/camunda/state-diagram.png)
+![State diagram](https://github.com/youssefalmia/report-workflow/blob/main/src/main/resources/bpm/camunda/state-diagram.png)
 
 The state diagram illustrates the **lifecycle of a report**, detailing how it transitions between different states based on user actions:
 
@@ -520,7 +520,7 @@ Once the project is running, you can access the **Swagger UI** to view and test 
 
 👉 **[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)**
 
-![Swagger](https://github.com/youssefalmia/report-workflow/blob/main/resources/bpm/camunda/swagger.png)
+![Swagger](https://github.com/youssefalmia/report-workflow/blob/main/src/main/resources/bpm/camunda/swagger.png)
 
 
 ---
