@@ -27,6 +27,11 @@ public class ReportController {
     private final ReportService reportService;
     private final UserContext userContext;
 
+    @GetMapping("/test")
+    public String test() {
+        return "Hello";
+    }
+
     @PostMapping("/start")
     @Operation(summary = "Create and start a report workflow", description = "Creates a report and starts the workflow process.")
     public ResponseEntity<ApiResponse<ReportDTO>> createReportAndStartWorkflow(@RequestParam String title) {

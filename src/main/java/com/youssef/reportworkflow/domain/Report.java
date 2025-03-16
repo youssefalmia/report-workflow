@@ -43,9 +43,6 @@ public class Report {
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(nullable = true)
-    private LocalDateTime completedAt;
-
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL)
     private List<ReportTransitionLog> transitionLogs = new ArrayList<>();
 }
