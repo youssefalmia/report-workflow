@@ -48,7 +48,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .requestMatchers("/api/v1/auth/register",
                                 "/api/v1/auth/login", "/swagger-ui/**",
                                 "/v3/api-docs/**", "/camunda/**",
-                                "/h2-console/**").permitAll()
+                                "/h2-console/**","/error").permitAll()
                         .requestMatchers("/api/v1/reports/*/confirm", "/api/v1/reports/start").hasRole("OWNER") // Only Owners can create reports
                         .requestMatchers("/api/v1/reports/*/review").hasRole("REVIEWER") // Only Reviewers can review reports
                         .requestMatchers("/api/v1/reports/*/validate").hasRole("VALIDATOR") // Only Validators can validate/refuse

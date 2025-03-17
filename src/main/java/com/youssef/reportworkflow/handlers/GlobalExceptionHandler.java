@@ -86,6 +86,19 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN, request);
     }
 
+    @ExceptionHandler(NoActiveTaskForReportException.class)
+    public ResponseEntity<ErrorResponse> handleNoActiveTask(NoActiveTaskForReportException ex, HttpServletRequest request) {
+        log.error("No active task found for report: {}", ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN, request);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception ex, HttpServletRequest request) {
+        log.error("Internal server error: {}", ex.getMessage());
+        return buildErrorResponse("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
+
+
     private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status, HttpServletRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
                 message,
