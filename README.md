@@ -1,6 +1,6 @@
 # **Report Workflow Management System**
 <details open>
-<summary><span style="font-size: 1.4em; font-weight: bold;">Table of Contents</span></summary>
+<summary><strong>Table of Contents</strong></summary>
 
 1. [**Introduction**](#introduction)
 2. [**Project Structure**](#-project-structure)
@@ -144,7 +144,7 @@ To keep our workflow system **flexible and scalable**, I implemented a **Strateg
 
 [//]: # (### **How It Works?**)
 <details>
-<summary><span style="font-size: 1.4em; font-weight: bold;">How It Works?</span></summary>
+<summary><strong>How It Works?</strong></summary>
 
 1. **Interface (`IReportWorkflowStrategy`)**
   - Defines all the operations needed for handling reports, such as `startWorkflow()`, `createReport()`, `reviewReport()`, and `processValidationDecision()`.
@@ -212,11 +212,11 @@ To keep our workflow system **flexible and scalable**, I implemented a **Strateg
    }
    ```
 </details>
----
+
 
 <details>
 
-<summary><span style="font-size: 1.4em; font-weight: bold;">Added Value</span></summary>
+<summary><strong>Added Value</strong></summary>
 
 - **Switching Engines is Effortless** – If we decide to move away from Camunda or support multiple engines, we don’t need to rewrite core logic.
 - **Better Maintainability** – Each workflow engine's logic is isolated in its own class.
@@ -280,7 +280,7 @@ As explained in the workflow steps section, I’m **not updating the report stat
 
 <details>
 
-<summary><span style="font-size: 1.4em; font-weight: bold;">How It Works</span></summary>
+<summary><strong>How It Works</strong></summary>
 
 Camunda emits **events** when:
 1. A **user task** (e.g., `Create Report`, `Review Report`) is completed.
@@ -412,7 +412,7 @@ State updates run in a **parallel thread**, not the main Spring thread, ensuring
 
 <details>
 
-<summary><span style="font-size: 1.4em; font-weight: bold;">Why This Approach?</span></summary>
+<summary><strong>Why This Approach?</strong></summary>
 
 1. **Decoupling & Flexibility** – The state update is independent of the workflow engine. Any new workflow strategy will follow the same event-based update mechanism.
 2. **Single Source of Truth** – Instead of updating the report state from multiple places, everything flows through `ReportStateEventListener`.
@@ -489,7 +489,7 @@ This **double-checks role permissions**, ensuring that even if an attacker bypas
 
 <details>
 
-<summary><span style="font-size: 1.4em; font-weight: bold;">Why This Approach?</span></summary>
+<summary><strong>Why This Approach?</strong></summary>
 
 1. **Performance-Efficient** – Role-based checks are enforced at the **earliest stage**, reducing unnecessary processing.
 2. **Simpler & Maintainable** – No need for complex ACL management; **roles are sufficient** for this use case.
