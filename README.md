@@ -1,4 +1,46 @@
-# Report Workflow Management System
+# **Report Workflow Management System**
+<details open>
+<summary><span style="font-size: 1.4em; font-weight: bold;">Table of Contents</span></summary>
+
+1. [**Introduction**](#introduction)
+2. [**Project Structure**](#-project-structure)
+3. [**Report Workflow**](#-report-workflow)
+    - [Authentication](#authentication)
+    - [Workflow Steps](#workflow-steps)
+        1. [Start Report (`/start` - Owners Only)](#1-start-report-start---owners-only)
+        2. [Confirm Report (`/{reportId}/confirm` - Owners Only)](#2-confirm-report-reportidconfirm---owners-only)
+        3. [Review Report (`/{reportId}/review` - Reviewers Only)](#3-review-report-reportidreview---reviewers-only)
+        4. [Validate Report (`/{reportId}/validate` - Validators Only)](#4-validate-report-reportidvalidate---validators-only)
+4. [**Workflow Strategy & Factory Pattern Implementation**](#1-workflow-strategy--factory-pattern-implementation)
+    - [Why This Pattern?](#why-this-pattern)
+    - [How It Works?](#how-it-works)
+5. [**Camunda BPMN Workflow Overview**](#2-camunda-bpmn-workflow-overview)
+    - [Why Camunda?](#why-camunda)
+    - [Understanding the BPMN Diagram](#understanding-the-bpmn-diagram)
+    - [Camunda’s Built-in Tools](#camundas-built-in-tools)
+6. [**Event-Driven State Updates**](#3-event-driven-state-updates)
+    - [How It Works](#how-it-works)
+    - [Capturing Events – `ReportStateListener`](#capturing-events--reportstatelistener)
+    - [Handling User Tasks (Create & Review Report)](#handling-user-tasks-create--review-report)
+    - [Handling Execution Events (Approved & Refused)](#handling-execution-events-approved--refused)
+    - [The Published Event – `ReportStateChangedEvent`](#the-published-event--reportstatechangedevent)
+    - [Updating the Database – `ReportStateEventListener`](#updating-the-database--reportstateeventlistener)
+    - [Why This Approach?](#why-this-approach)
+7. [**Security Mechanism**](#4-security-mechanism)
+    - [Role-Based Access Control (RBAC)](#role-based-access-control-rbac)
+    - [Token-Based Authentication](#token-based-authentication)
+    - [Enforcing Security at the Service Layer](#enforcing-security-at-the-service-layer)
+    - [Why This Approach?](#why-this-approach-1)
+8. [**Class Diagram**](#-class-diagram)
+9. [**Report Lifecycle State Diagram**](#-report-lifecycle-state-diagram)
+10. [**Setup & Usage**](#-setup--usage)
+    - [Clone the Repository](#1-clone-the-repository)
+    - [Install Dependencies](#2-install-dependencies)
+    - [Run the Project](#3-run-the-project)
+11. [**API Documentation**](#api-documentation)
+12. [**Running Tests**](#running-tests)
+13. [**Potential Improvements**](#-potential-improvements)
+</details>
 
 
 ## **Introduction**
@@ -37,15 +79,15 @@ src/
  │   │   ├── application.properties     # Application configuration
 ```
 
-# Report Workflow
+## **📝 Report Workflow**
 
-## Authentication
+### **Authentication**
 
 A user starts by creating an account via `/register` or logging in via `/login`. These endpoints return a JWT containing the user roles. Once authenticated, the user includes the token in every request and can now interact with the system.
 
-## Workflow Steps
+### **Workflow Steps**
 
-### 1. Start Report (`/start` - Owners Only)
+### **1. Start Report (`/start` - Owners Only)**
 To start, the owner must hit the `/start` endpoint. The controller will intercept the request, create a new report, start a workflow process (e.g., Camunda BPMN), and return an `ApiResponse` containing `ReportDTO`.
 
 **Under the hood:**
@@ -54,7 +96,7 @@ To start, the owner must hit the `/start` endpoint. The controller will intercep
 - `workflowService` follows a **strategy pattern + factory** to allow easy switching of workflow engines or simply any workflow and state management strategy. (See [Workflow Strategy & Factory Pattern Implementation](#1-workflow-strategy--factory-pattern-implementation))
 - The system now waits for the owner to confirm the report creation.
 
-### 2. Confirm Report (`/{reportId}/confirm` - Owners Only)
+### **2. Confirm Report (`/{reportId}/confirm` - Owners Only)**
 This endpoint confirms the creation of the report by calling the report service, which then calls `workflowService` to complete the **user task "createTask"** from the process identified by `reportId`.
 
 **Under the hood:**
@@ -66,7 +108,7 @@ This endpoint confirms the creation of the report by calling the report service,
     **(See [Event-Driven State Updates](#3-event-driven-state-updates))**
 - The system now waits for a reviewer to review the report.
 
-### 3. Review Report (`/{reportId}/review` - Reviewers Only)
+### **3. Review Report (`/{reportId}/review` - Reviewers Only)**
 This endpoint allows reviewers to review the report. It takes `reportId` and returns an `ApiResponse` of `ReportDTO`.
 
 **Under the hood:**
@@ -76,7 +118,7 @@ This endpoint allows reviewers to review the report. It takes `reportId` and ret
 - `ReportStateListener` logs and persists the state changes. **(See [Event-Driven State Updates](#3-event-driven-state-updates))**
 - The system now waits for report validation.
 
-### 4. Validate Report (`/{reportId}/validate` - Validators Only)
+### **4. Validate Report (`/{reportId}/validate` - Validators Only)**
 This endpoint validates or refuses the report based on a boolean flag. It returns an `ApiResponse` of `ReportDTO`.
 
 **Under the hood:**
@@ -87,22 +129,23 @@ This endpoint validates or refuses the report based on a boolean flag. It return
 - The process moves through an **exclusive gateway** that checks the `isApproved` variable to decide if the report is **approved or refused**.
 - **End events** in BPMN (with execution listeners) notify the system, log, and persist data. **(See [Event-Driven State Updates](#3-event-driven-state-updates))**
 
-# A more in depth look at component stated in previous section
-
-## 1. Workflow Strategy & Factory Pattern Implementation
-
-To keep our workflow system **flexible and scalable**, we implemented a **Strategy Pattern combined with a Factory Pattern**. This approach allows us to easily switch between different workflow engines (e.g., Camunda, or any custom solution) without modifying the core logic of report processing.
-
 ---
 
-### Why I Used This Pattern?
-1. **Decoupling Logic** – Instead of hardcoding a specific workflow engine, we abstracted the logic using `IReportWorkflowStrategy`. This ensures that our core services don’t depend on a single BPM engine.
+## **1️⃣ Workflow Strategy & Factory Pattern Implementation**
+
+To keep our workflow system **flexible and scalable**, I implemented a **Strategy Pattern combined with a Factory Pattern**. This approach allows us to easily switch between different workflow engines (e.g., Camunda, or any custom solution) without modifying the core logic of report processing.
+
+
+### **Why This Pattern?**
+1. **Decoupling Logic** – Instead of hardcoding a specific workflow engine, I abstracted the logic using `IReportWorkflowStrategy`. This ensures that our core services don’t depend on a single BPM engine.
 2. **Extensibility** – If we ever need to add a new workflow engine, we just need to implement `IReportWorkflowStrategy` and register it in the factory. No need to touch existing code.
 3. **Single Responsibility** – Each workflow engine has its own strategy class, making the system easier to maintain.
 
----
 
-### How It Works?
+[//]: # (### **How It Works?**)
+<details>
+<summary><span style="font-size: 1.4em; font-weight: bold;">How It Works?</span></summary>
+
 1. **Interface (`IReportWorkflowStrategy`)**
   - Defines all the operations needed for handling reports, such as `startWorkflow()`, `createReport()`, `reviewReport()`, and `processValidationDecision()`.
   - Any workflow engine must implement this interface.
@@ -168,21 +211,25 @@ To keep our workflow system **flexible and scalable**, we implemented a **Strate
        }
    }
    ```
-
+</details>
 ---
 
-### Added Value
+<details>
+
+<summary><span style="font-size: 1.4em; font-weight: bold;">Added Value</span></summary>
+
 - **Switching Engines is Effortless** – If we decide to move away from Camunda or support multiple engines, we don’t need to rewrite core logic.
 - **Better Maintainability** – Each workflow engine's logic is isolated in its own class.
 - **Scalability** – New workflow implementations can be added **without modifying existing code**, following Open-Closed Principle.
 
-This ensures our workflow management remains **robust, efficient, and adaptable** as requirements evolve.
-
-## 2. Camunda BPMN Workflow Overview
-
-For this project, **Camunda** was chosen as the BPMN engine due to its **scalability, flexibility, and built-in tools**. BPMN (Business Process Model and Notation) provides a **visual representation of workflows**, making it easier to manage complex processes while keeping them structured and maintainable.
+</details>
 
 ---
+
+## **2️⃣ Camunda BPMN Workflow Overview**
+
+I have chosen **Camunda** for its scalability, flexibility, and built-in tools. BPMN provides a visual workflow representation, simplifying process management.
+
 
 ### Why Camunda?
 1. **Separation of Concerns** – The business process is **handled externally**, allowing us to modify workflows without changing the core logic.
@@ -190,7 +237,6 @@ For this project, **Camunda** was chosen as the BPMN engine due to its **scalabi
 3. **Built-in UI & Monitoring** – Camunda provides **Cockpit, Tasklist, and Admin Panel** to visualize and manage processes.
 4. **Scalability** – Camunda is designed for handling **large-scale workflows**, making it future-proof for more complex scenarios.
 
----
 
 ### Understanding the BPMN Diagram
 
@@ -212,32 +258,29 @@ Each of these represents a step in the report approval process.
   - If **refused**, it moves to the **Report Refused** end event.
 6. **End Events** – Both end events have **Execution Listeners** that notify the system of which outcome happened (**approved or refused**).
 
----
-
 ### Camunda’s Built-in Tools
 
 Camunda provides:
-- **Cockpit** – A dashboard to **monitor process instances, check active tasks, and debug workflows**.
-- **Tasklist** – A UI where users can claim and complete tasks.
-- **Admin Panel** – Manages users, permissions, and deployments.
+- **Cockpit** – Monitor process instances and debug workflows.
+- **Tasklist** – UI for users to claim and complete tasks.
+- **Admin Panel** – Manage users, permissions, and deployments.
 
 🚨🚨 **Important Security Note:** 🚨🚨  
 
-For this project, **Camunda’s tasklist security is disabled** to prevent unauthorized users from completing tasks directly via the UI. However, you **can still access the Camunda Cockpit UI to monitor process progress**.
+For this project, I disabled **Camunda’s tasklist** to prevent unauthorized users from completing tasks directly via the UI. However, you **can still access the Camunda Cockpit UI to monitor process progress**.
 
 ⚠️ In a **real-world scenario**, a better approach would be to integrate Camunda’s identity provider with **Spring Security Context or Keycloak**, ensuring secure authentication and role-based access control.
 
 ---
 
-This setup ensures that our workflow remains **secure, maintainable, and event-driven**, leveraging Camunda’s strengths while enforcing the right security measures.
 
-## 3. Event-Driven State Updates
+## **3️⃣ Event-Driven State Updates**
 
-As you probably already noticed, I’m **not updating the report state directly** from `ReportService` or `CamundaReportWorkflow`. Instead, I implemented an **event-driven state update mechanism** to keep things **decoupled and scalable**.
+As explained in the workflow steps section, I’m **not updating the report state directly** from `ReportService` or `CamundaReportWorkflow`. Instead, I implemented an **event-driven state update mechanism** to keep things **decoupled and scalable**.
 
----
+<details>
 
-### How It Works
+<summary><span style="font-size: 1.4em; font-weight: bold;">How It Works</span></summary>
 
 Camunda emits **events** when:
 1. A **user task** (e.g., `Create Report`, `Review Report`) is completed.
@@ -249,9 +292,8 @@ However, I **do not update the state inside `ReportStateListener`** itself. This
 
 This way, **every workflow engine will follow the same event-based state update approach**, keeping the logic centralized.
 
----
 
-### `ReportStateListener` – Capturing Events
+#### **Capturing Events – `ReportStateListener`**
 
 This component listens for **task completion and execution events** in Camunda, then **publishes the event** without modifying any report state directly.
 
@@ -301,7 +343,7 @@ public void notify(DelegateExecution execution) {
 
 ---
 
-### `ReportStateChangedEvent` – The Published Event
+### The Published Event – `ReportStateChangedEvent`
 
 Once a task is completed, `ReportStateListener` **publishes an event**, which contains:
 - `reportId` – The report being updated
@@ -319,12 +361,10 @@ public class ReportStateChangedEvent {
 }
 ```
 
----
-
-### `ReportStateEventListener` – Updating the Database
+### Updating the Database – `ReportStateEventListener`
 
 This component **listens for `ReportStateChangedEvent`** and updates the report **inside the database**.  
-Since we use **async processing**, this also helps with handling high loads.
+
 
 ```java
   @Component
@@ -365,26 +405,26 @@ Since we use **async processing**, this also helps with handling high loads.
   }
 ```
 
-#### Why async ?
+#### Why @async ?
 State updates run in a **parallel thread**, not the main Spring thread, ensuring **non-blocking execution**. Since each actor (Owner, Reviewer, Validator) takes time to complete their task, an instant update isn’t necessary. **@Async** allows the system to continue processing requests while updates happen in the background, improving performance and scalability.
 
----
+</details>
 
-### Why This Approach?
+<details>
+
+<summary><span style="font-size: 1.4em; font-weight: bold;">Why This Approach?</span></summary>
 
 1. **Decoupling & Flexibility** – The state update is independent of the workflow engine. Any new workflow strategy will follow the same event-based update mechanism.
 2. **Single Source of Truth** – Instead of updating the report state from multiple places, everything flows through `ReportStateEventListener`.
 3. **Asynchronous Processing** – High-load scenarios won’t block execution.
 4. **Better Debugging & Logging** – Logging is **centralized** in one place, ensuring every state transition is **tracked and easily traceable**.
+</details>
+---
 
-
-With this setup, the **report state updates itself automatically based on workflow events**, keeping the logic clean, modular, and scalable.
-
-## 4. Security Mechanism
+## **4️⃣ Security Mechanism**
 
 Initially, I considered **Access Control Lists (ACLs)** for fine-grained permissions, but they introduced **unnecessary complexity and performance overhead**. Since this project only requires **role-based restrictions**, ensuring **Owners create, Reviewers review, and Validators validate**, a **simpler Role-Based Access Control (RBAC) approach** is the better fit. It keeps things **efficient, scalable, and easy to maintain** while still enforcing strict access control.
 
----
 
 ### Role-Based Access Control (RBAC)
 
@@ -394,8 +434,6 @@ RBAC ensures that:
 - **Validators** can validate or refuse reports.
 
 Instead of handling access logic **inside service methods**, I enforce security **at the request level** using **Spring Security’s `SecurityFilterChain`**. This ensures that **unauthorized requests are blocked before reaching the service layer**.
-
----
 
 ### Token-Based Authentication
 
@@ -429,7 +467,7 @@ This ensures:
 **Role checks happen before execution** – Unauthorized requests are blocked **before reaching service methods**.  
 **Custom access handling** – Unauthorized access is **logged and handled properly** using `CustomAccessDeniedHandler`.
 
----
+
 
 ### Enforcing Security at the Service Layer
 
@@ -448,9 +486,10 @@ public void validateReport(Long validatorId, boolean isApproved) { ... }
 
 This **double-checks role permissions**, ensuring that even if an attacker bypasses request filtering, they **cannot execute restricted actions** at the service level.
 
----
 
-### Why This Approach?
+<details>
+
+<summary><span style="font-size: 1.4em; font-weight: bold;">Why This Approach?</span></summary>
 
 1. **Performance-Efficient** – Role-based checks are enforced at the **earliest stage**, reducing unnecessary processing.
 2. **Simpler & Maintainable** – No need for complex ACL management; **roles are sufficient** for this use case.
@@ -459,12 +498,11 @@ This **double-checks role permissions**, ensuring that even if an attacker bypas
    - **Security Filter** blocks unauthorized requests before reaching services.
    - **Service-Level Checks** prevent bypassing security at the API level.
 
-With this setup, the **system remains secure, efficient, and easy to maintain**, ensuring that **only authorized users can perform actions based on their roles**.
-
+</details>
 
 ---
 
-## Class Diagram Overview
+## **📌 Class Diagram**
 
 ![Class diagram](https://github.com/youssefalmia/report-workflow/blob/main/src/main/resources/bpm/camunda/class-diagram.png)
 
@@ -478,7 +516,7 @@ The class diagram focuses on the **core domain model**, representing the essenti
 - **ReportTransitionLog**: Tracks all state changes of a report, storing the `report_id`, the `user` who performed the change (`performedBy_id`), the `newState`, and the timestamp of the transition.
 
 
-## Report Lifecycle State Diagram
+## **📌 Report Lifecycle State Diagram**
 
 ![State diagram](https://github.com/youssefalmia/report-workflow/blob/main/src/main/resources/bpm/camunda/state-diagram.png)
 
@@ -492,20 +530,20 @@ The state diagram illustrates the **lifecycle of a report**, detailing how it tr
 
 
 
-## Setup & Usage
+## **🚀 Setup & Usage**
 
 Getting the project up and running is **super easy**—just follow these steps:
 
-1. **Clone the repository**
+**1. Clone the repository**
    ```sh
-   git clone <repo-url>
-   cd <repo-folder>
+   git clone https://github.com/youssefalmia/report-workflow
+   cd report-workflow
    ```
-2. **Install dependencies**
+**2. Install dependencies**
    ```sh
    mvn clean install
    ```  
-3. **Run the project**
+**3. Run the project**
    ```sh
    mvn spring-boot:run
    ```  
@@ -514,7 +552,7 @@ That's it! No need to configure anything—thanks to the **H2 in-memory database
 
 ---
 
-### API Documentation & Testing
+### **API Documentation**
 
 Once the project is running, you can access the **Swagger UI** to view and test all API endpoints:
 
@@ -541,6 +579,17 @@ This will run all tests and generate a **test coverage report**.
 
 ---
 
+## **🚀 Potential Improvements**
+
+1. **Try Other Workflow Engines** – I could add **Spring Activiti** or a **simple state machine** to compare with Camunda and see which works best.
+
+2. **Configure an External Identity Provider for Camunda** – Instead of using Camunda’s built-in user management, I could integrate it with **Spring Security** or **Keycloak** as an external identity provider. This would centralize authentication and improve security.
+
+3. **Keep Camunda’s Database Separate** – Right now, Camunda shares the same database as the app. Separating it would make things cleaner and improve performance.
+
+4. **Better Logging & Monitoring** – Adding **Prometheus, Grafana, or ELK** would help track workflows, debug faster, and get better insights.
+
+---
+
 🎉 **You're all set! Enjoy working with the project.** 🚀
-## **Report Workflow Management - Secure & Scalable System**
   
