@@ -549,6 +549,25 @@ That's it! No need to configure anything—thanks to the **H2 in-memory database
 
 ---
 
+### **🔒 Pre-Created Users**
+To make testing easier, I have added **four pre-created users**, each with different roles:
+
+| Username         | Password    | Roles                              |
+|-----------------|------------|------------------------------------|
+| **ownerUser**   | ownerPass   | `OWNER`                           |
+| **reviewerUser** | reviewerPass | `REVIEWER`                        |
+| **validatorUser** | validatorPass | `VALIDATOR`                        |
+| **multiRoleUser** | multiPass  | `OWNER, REVIEWER, VALIDATOR`      |
+
+You can **use these users directly** to interact with the API **or** register a new user via the `/register` endpoint.
+
+#### **🔍 Accessing the Database**
+If you want to explore or modify the database, you can access the **H2 Console** here:  
+👉 **[http://localhost:8080/h2-console](http://localhost:8080/h2-console)**
+
+
+---
+
 ### **API Documentation**
 
 Once the project is running, you can access the **Swagger UI** to view and test all API endpoints:
@@ -557,8 +576,33 @@ Once the project is running, you can access the **Swagger UI** to view and test 
 
 ![Swagger](https://github.com/youssefalmia/report-workflow/blob/main/src/main/resources/bpm/camunda/swagger.png)
 
+---
+
+
+## **🚀 Camunda Cockpit Demo**
+The **Camunda Cockpit** provides a **real-time overview** of tasks being executed.
+
+As shown in the demo GIF below, the **Cockpit UI updates automatically** as tasks are completed when you hit the corresponding API endpoints.
+
+## **Camunda Cockpit Overview**
+
+To make things even easier, I've **precreated a Camunda user**, so you can log in to the Cockpit UI without any setup:
+
+- **Username:** `cockpitUser`
+- **Password:** `cockpitPass`
+
+Just head over to **[http://localhost:8080/camunda/app/cockpit/default/](http://localhost:8080/camunda/app/cockpit/default/)** and log in! 🚀
+
+
+📌 **Watch how tasks move through the workflow:**
+
+![Cockpit Demo](https://github.com/youssefalmia/report-workflow/blob/main/src/main/resources/bpm/camunda/cockpit_demo.gif)
+
 
 ---
+
+
+
 
 ### Running Tests
 
@@ -585,6 +629,8 @@ This will run all tests and generate a **test coverage report**.
 3. **Keep Camunda’s Database Separate** – Right now, Camunda shares the same database as the app. Separating it would make things cleaner and improve performance.
 
 4. **Better Logging & Monitoring** – Adding **Prometheus, Grafana, or ELK** would help track workflows, debug faster, and get better insights.
+   
+5. **Expand Test Coverage** – While I’ve put effort into writing tests for the app, we still need to add **more unit, integration, and performance tests** to ensure stability and optimize performance. 
 
 ---
 
