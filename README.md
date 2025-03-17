@@ -11,14 +11,14 @@
         2. [Confirm Report (`/{reportId}/confirm` - Owners Only)](#2-confirm-report-reportidconfirm---owners-only)
         3. [Review Report (`/{reportId}/review` - Reviewers Only)](#3-review-report-reportidreview---reviewers-only)
         4. [Validate Report (`/{reportId}/validate` - Validators Only)](#4-validate-report-reportidvalidate---validators-only)
-4. [**Workflow Strategy & Factory Pattern Implementation**](#1-workflow-strategy--factory-pattern-implementation)
+4. [**Workflow Strategy & Factory Pattern Implementation**](#-1-workflow-strategy--factory-pattern-implementation)
     - [Why This Pattern?](#why-this-pattern)
     - [How It Works?](#how-it-works)
-5. [**Camunda BPMN Workflow Overview**](#2-camunda-bpmn-workflow-overview)
+5. [**Camunda BPMN Workflow Overview**](#-2-camunda-bpmn-workflow-overview)
     - [Why Camunda?](#why-camunda)
     - [Understanding the BPMN Diagram](#understanding-the-bpmn-diagram)
     - [Camunda’s Built-in Tools](#camundas-built-in-tools)
-6. [**Event-Driven State Updates**](#3-event-driven-state-updates)
+6. [**Event-Driven State Updates**](#-3-event-driven-state-updates)
     - [How It Works](#how-it-works)
     - [Capturing Events – `ReportStateListener`](#capturing-events--reportstatelistener)
     - [Handling User Tasks (Create & Review Report)](#handling-user-tasks-create--review-report)
@@ -26,7 +26,7 @@
     - [The Published Event – `ReportStateChangedEvent`](#the-published-event--reportstatechangedevent)
     - [Updating the Database – `ReportStateEventListener`](#updating-the-database--reportstateeventlistener)
     - [Why This Approach?](#why-this-approach)
-7. [**Security Mechanism**](#4-security-mechanism)
+7. [**Security Mechanism**](#-4-security-mechanism)
     - [Role-Based Access Control (RBAC)](#role-based-access-control-rbac)
     - [Token-Based Authentication](#token-based-authentication)
     - [Enforcing Security at the Service Layer](#enforcing-security-at-the-service-layer)
@@ -131,7 +131,7 @@ This endpoint validates or refuses the report based on a boolean flag. It return
 
 ---
 
-## **1️⃣ Workflow Strategy & Factory Pattern Implementation**
+## **🔵 1. Workflow Strategy & Factory Pattern Implementation**
 
 To keep our workflow system **flexible and scalable**, I implemented a **Strategy Pattern combined with a Factory Pattern**. This approach allows us to easily switch between different workflow engines (e.g., Camunda, or any custom solution) without modifying the core logic of report processing.
 
@@ -226,7 +226,7 @@ To keep our workflow system **flexible and scalable**, I implemented a **Strateg
 
 ---
 
-## **2️⃣ Camunda BPMN Workflow Overview**
+## **🔵 2. Camunda BPMN Workflow Overview**
 
 I have chosen **Camunda** for its scalability, flexibility, and built-in tools. BPMN provides a visual workflow representation, simplifying process management.
 
@@ -274,7 +274,7 @@ For this project, I disabled **Camunda’s tasklist** to prevent unauthorized us
 ---
 
 
-## **3️⃣ Event-Driven State Updates**
+## **🔵 3. Event-Driven State Updates**
 
 As explained in the workflow steps section, I’m **not updating the report state directly** from `ReportService` or `CamundaReportWorkflow`. Instead, I implemented an **event-driven state update mechanism** to keep things **decoupled and scalable**.
 
@@ -419,12 +419,12 @@ State updates run in a **parallel thread**, not the main Spring thread, ensuring
 3. **Asynchronous Processing** – High-load scenarios won’t block execution.
 4. **Better Debugging & Logging** – Logging is **centralized** in one place, ensuring every state transition is **tracked and easily traceable**.
 </details>
+
 ---
 
-## **4️⃣ Security Mechanism**
+## **🔵 4. Security Mechanism**
 
 Initially, I considered **Access Control Lists (ACLs)** for fine-grained permissions, but they introduced **unnecessary complexity and performance overhead**. Since this project only requires **role-based restrictions**, ensuring **Owners create, Reviewers review, and Validators validate**, a **simpler Role-Based Access Control (RBAC) approach** is the better fit. It keeps things **efficient, scalable, and easy to maintain** while still enforcing strict access control.
-
 
 ### Role-Based Access Control (RBAC)
 
