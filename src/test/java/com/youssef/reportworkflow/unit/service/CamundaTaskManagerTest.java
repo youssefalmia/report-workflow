@@ -8,6 +8,9 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.*;
 import org.mockito.*;
 import org.mockito.junit.jupiter.*;
+import org.springframework.test.annotation.*;
+import org.springframework.test.context.*;
+import org.springframework.transaction.annotation.*;
 
 import java.util.*;
 
@@ -19,6 +22,11 @@ import static org.mockito.Mockito.*;
  * @author Jozef
  */
 @ExtendWith(MockitoExtension.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@Transactional
+@TestPropertySource(properties = {
+        "spring.datasource.url=jdbc:h2:mem:report_db_test;DB_CLOSE_DELAY=-1"
+})
 class CamundaTaskManagerTest {
 
     @Mock

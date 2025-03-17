@@ -32,9 +32,10 @@ public class CamundaAuthorizationService {
             identityService.saveUser(user);
             System.out.println(" Camunda cockpit user created: " + COCKPIT_USERNAME);
         }
-
-        //  Step 2: Assign Read-Only Permissions
-        configureReadOnlyPermissions(COCKPIT_USERNAME);
+        if (!authorizationExists(COCKPIT_USERNAME, Resources.APPLICATION)) {
+            //  Step 2: Assign Read-Only Permissions
+            configureReadOnlyPermissions(COCKPIT_USERNAME);
+        }
     }
 
     private void configureReadOnlyPermissions(String username) {
@@ -73,5 +74,13 @@ public class CamundaAuthorizationService {
             auth.addPermission(permission);
         }
         authorizationService.saveAuthorization(auth);
+    }
+
+    private boolean authorizationExists(String userId, Resources resourceType) {
+        return authorizationService
+                .createAuthorizationQuery()
+                .userIdIn(userId)
+                .resourceType(resourceType.ordinal())
+                .count() > 0;
     }
 }

@@ -113,7 +113,7 @@ class ReportServiceTest {
     void validateOrRefuseReport_shouldReviewSuccessfully() {
         // given
         User mockuser = new User(reviewerId, "reviewerUsername", "reviewerPass", Set.of(Role.REVIEWER));
-        Report report = new Report(reportId, title, ReportState.CREATED, null, null, null, LocalDateTime.now(), null, new ArrayList<>());
+        Report report = new Report(reportId, title, ReportState.CREATED, null, mockuser, null, LocalDateTime.now(), new ArrayList<>());
 
         ReportDTO expectedDTO = new ReportDTO(reportId, title, "reviewerUsername", ReportState.REVIEWED);
 
@@ -151,7 +151,7 @@ class ReportServiceTest {
     @Test
     void reviewReport_ShouldThrowIfReviewerNotFound() {
         // Given: A report exists but reviewer is missing
-        Report report = new Report(reportId, title, ReportState.CREATED, null, null, null, LocalDateTime.now(), null, new ArrayList<>());
+        Report report = new Report(reportId, title, ReportState.CREATED, null, null, null, LocalDateTime.now(), new ArrayList<>());
 
         when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
         when(userRepository.findById(reviewerId)).thenReturn(Optional.empty());
@@ -169,7 +169,7 @@ class ReportServiceTest {
     void reviewReport_ShouldThrowIfUserNotAReviewer() {
         // Given: A user without the `REVIEWER` role
         User nonReviewer = new User(reviewerId, "someUser", "hashedPassword", Set.of(Role.OWNER)); // ❌ Not a reviewer
-        Report report = new Report(reportId, title, ReportState.CREATED, null, null, null, LocalDateTime.now(), null, new ArrayList<>());
+        Report report = new Report(reportId, title, ReportState.CREATED, null, null, null, LocalDateTime.now(), new ArrayList<>());
 
         when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
         when(userRepository.findById(reviewerId)).thenReturn(Optional.of(nonReviewer));
@@ -186,7 +186,7 @@ class ReportServiceTest {
     void validateOrRefuseReport_ShouldValidateSuccessfully() {
         // Given: A validator user and a reviewed report
         User validator = new User(validatorId, "validatorUser", "hashedPassword", Set.of(Role.VALIDATOR));
-        Report report = new Report(reportId, title, ReportState.REVIEWED, null, null, null, LocalDateTime.now(), null, new ArrayList<>());
+        Report report = new Report(reportId, title, ReportState.REVIEWED, null, null, null, LocalDateTime.now(), new ArrayList<>());
 
         ReportDTO expectedDTO = new ReportDTO(reportId, title, "validatorUser", ReportState.VALIDATED);
 
@@ -213,7 +213,7 @@ class ReportServiceTest {
     void validateOrRefuseReport_ShouldRefuseSuccessfully() {
         // Given: Same setup as validation but different expected state
         User validator = new User(validatorId, "validatorUser", "hashedPassword", Set.of(Role.VALIDATOR));
-        Report report = new Report(reportId, title, ReportState.REVIEWED, null, null, null, LocalDateTime.now(), null, new ArrayList<>());
+        Report report = new Report(reportId, title, ReportState.REVIEWED, null, null, null, LocalDateTime.now(), new ArrayList<>());
 
         ReportDTO expectedDTO = new ReportDTO(reportId, title, "validatorUser", ReportState.REFUSED);
 
@@ -251,7 +251,7 @@ class ReportServiceTest {
     @Test
     void validateOrRefuseReport_ShouldThrowIfStateNotReviewed() {
         // Given: Report exists but in the wrong state
-        Report report = new Report(reportId, title, ReportState.CREATED, null, null, null, LocalDateTime.now(), null, new ArrayList<>());
+        Report report = new Report(reportId, title, ReportState.CREATED, null, null, null, LocalDateTime.now(), new ArrayList<>());
 
         when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
         when(workflowService.getReportState(reportId)).thenReturn(ReportState.CREATED);
@@ -266,7 +266,7 @@ class ReportServiceTest {
     @Test
     void validateOrRefuseReport_ShouldThrowIfValidatorNotFound() {
         // Given: Report exists but validator doesn't
-        Report report = new Report(reportId, title, ReportState.REVIEWED, null, null, null, LocalDateTime.now(), null, new ArrayList<>());
+        Report report = new Report(reportId, title, ReportState.REVIEWED, null, null, null, LocalDateTime.now(), new ArrayList<>());
 
         when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
         when(workflowService.getReportState(reportId)).thenReturn(ReportState.REVIEWED);
@@ -284,7 +284,7 @@ class ReportServiceTest {
     void validateOrRefuseReport_ShouldThrowIfUserNotAValidator() {
         // Given: A user without the `VALIDATOR` role
         User nonValidator = new User(validatorId, "someUser", "hashedPassword", Set.of(Role.OWNER)); // ❌ Not a validator
-        Report report = new Report(reportId, title, ReportState.REVIEWED, null, null, null, LocalDateTime.now(), null, new ArrayList<>());
+        Report report = new Report(reportId, title, ReportState.REVIEWED, null, null, null, LocalDateTime.now(), new ArrayList<>());
 
         when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
         when(workflowService.getReportState(reportId)).thenReturn(ReportState.REVIEWED);

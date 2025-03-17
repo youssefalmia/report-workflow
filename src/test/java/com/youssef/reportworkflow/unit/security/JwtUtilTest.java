@@ -11,7 +11,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.*;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.annotation.*;
+import org.springframework.test.context.*;
 import org.springframework.test.context.bean.override.mockito.*;
+import org.springframework.transaction.annotation.*;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -23,6 +26,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * @author Jozef
  */
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@Transactional
+@TestPropertySource(properties = {
+        "spring.datasource.url=jdbc:h2:mem:report_db_test;DB_CLOSE_DELAY=-1"
+})
 class JwtUtilTest {
     @MockitoSpyBean
     private JwtUtil jwtUtil;

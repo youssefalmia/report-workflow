@@ -16,4 +16,9 @@ public class ReportDTO {
     private String title;
     private String owner;
     private ReportState state;
+
+    public ReportDTO(Long id, String title) {
+        this.id = id;
+        this.title = title;
+    }
 }

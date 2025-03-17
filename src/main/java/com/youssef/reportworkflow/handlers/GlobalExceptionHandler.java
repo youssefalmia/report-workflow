@@ -6,6 +6,7 @@ import jakarta.servlet.http.*;
 import lombok.extern.slf4j.*;
 import org.springframework.http.*;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.*;
@@ -53,6 +54,13 @@ public class GlobalExceptionHandler {
         log.error(ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND, request);
     }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UsernameNotFoundException ex, HttpServletRequest request) {
+        log.error("User not found: {}", ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND, request);
+    }
+
 
     @ExceptionHandler(ValidatorPermissionException.class)
     public ResponseEntity<ErrorResponse> handleValidatorPermission(ValidatorPermissionException ex, HttpServletRequest request) {

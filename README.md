@@ -228,9 +228,6 @@ To keep our workflow system **flexible and scalable**, I implemented a **Strateg
 
 ## **🔵 2. Camunda BPMN Workflow Overview**
 
-I have chosen **Camunda** for its scalability, flexibility, and built-in tools. BPMN provides a visual workflow representation, simplifying process management.
-
-
 ### Why Camunda?
 1. **Separation of Concerns** – The business process is **handled externally**, allowing us to modify workflows without changing the core logic.
 2. **Event-Driven Architecture** – Task listeners and execution listeners help **trigger events and notify the system** when tasks are completed.

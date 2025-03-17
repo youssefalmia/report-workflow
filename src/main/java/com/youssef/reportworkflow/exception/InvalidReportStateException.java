@@ -12,4 +12,7 @@ public class InvalidReportStateException extends RuntimeException {
     public InvalidReportStateException(ReportState expected, ReportState actual) {
         super("Invalid state transition. Expected: " + expected + ", but was: " + actual);
     }
+    public InvalidReportStateException(String message) {
+        super(message);
+    }
 }

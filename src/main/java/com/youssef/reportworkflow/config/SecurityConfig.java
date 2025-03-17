@@ -41,21 +41,22 @@ public class SecurityConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter, CustomAccessDeniedHandler customAccessDeniedHandler) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter, CustomAccessDeniedHandler customAccessDeniedHandler, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .headers(httpSecurityHeadersConfigurer -> httpSecurityHeadersConfigurer.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/register",
                                 "/api/v1/auth/login", "/swagger-ui/**",
-                                "/v3/api-docs/**","/camunda/**",
+                                "/v3/api-docs/**", "/camunda/**",
                                 "/h2-console/**").permitAll()
-                        .requestMatchers("/api/v1/reports/*/confirm","/api/v1/reports/start").hasRole("OWNER") // Only Owners can create reports
+                        .requestMatchers("/api/v1/reports/*/confirm", "/api/v1/reports/start").hasRole("OWNER") // Only Owners can create reports
                         .requestMatchers("/api/v1/reports/*/review").hasRole("REVIEWER") // Only Reviewers can review reports
                         .requestMatchers("/api/v1/reports/*/validate").hasRole("VALIDATOR") // Only Validators can validate/refuse
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
                         .accessDeniedHandler(customAccessDeniedHandler) // Catch unauthorized access to throw custom exceptions on each specific role
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
                 ).formLogin(AbstractHttpConfigurer::disable)
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

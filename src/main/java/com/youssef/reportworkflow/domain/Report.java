@@ -45,5 +45,11 @@ public class Report {
 
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL)
     private List<ReportTransitionLog> transitionLogs = new ArrayList<>();
+
+
+    public Report(Long id, String title) {
+        this.id = id;
+        this.title = title;
+    }
 }
 
