@@ -93,19 +93,19 @@ To start, the owner must hit the `/start` endpoint. The controller will intercep
 **Under the hood:**
 - Calls the service layer to handle report creation.
 - Uses `workflowService` to start the workflow process with `reportId` and `ownerId`.
-- `workflowService` follows a **strategy pattern + factory** to allow easy switching of workflow engines or simply any workflow and state management strategy. (See [Workflow Strategy & Factory Pattern Implementation](#1-workflow-strategy--factory-pattern-implementation))
+- `workflowService` follows a **strategy pattern + factory** to allow easy switching of workflow engines or simply any workflow and state management strategy. (See [Workflow Strategy & Factory Pattern Implementation](#-1-workflow-strategy--factory-pattern-implementation))
 - The system now waits for the owner to confirm the report creation.
 
 ### **2. Confirm Report (`/{reportId}/confirm` - Owners Only)**
 This endpoint confirms the creation of the report by calling the report service, which then calls `workflowService` to complete the **user task "createTask"** from the process identified by `reportId`.
 
 **Under the hood:**
-- A BPMN user task is pre-configured with a **task listener**. (See [Camunda BPMN Workflow Overview](#2-camunda-bpmn-workflow-overview))
+- A BPMN user task is pre-configured with a **task listener**. (See [Camunda BPMN Workflow Overview](#-2-camunda-bpmn-workflow-overview))
 - Completing the task triggers `ReportStateListener`, which: 
     - Publishes `ReportStateChangedEvent` (reportId, userId, new state).
     - `ReportStateEventListener` intercepts the event, logs, and persists the changes in the database.
   
-    **(See [Event-Driven State Updates](#3-event-driven-state-updates))**
+    **(See [Event-Driven State Updates](#-3-event-driven-state-updates))**
 - The system now waits for a reviewer to review the report.
 
 ### **3. Review Report (`/{reportId}/review` - Reviewers Only)**
@@ -115,7 +115,7 @@ This endpoint allows reviewers to review the report. It takes `reportId` and ret
 - Calls report service to validate the report state (ensuring workflow engine is the single source of truth).
 - Fetches the user and rechecks if they have the **REVIEWER** role for additional security. **(Note: This step is technically redundant since user roles are already enforced via `securityFilterChain` and `@PreAuthorize`. However, the additional check ensures an extra layer of security.)**
 - Calls `workflowService` to complete a BPMN user task.
-- `ReportStateListener` logs and persists the state changes. **(See [Event-Driven State Updates](#3-event-driven-state-updates))**
+- `ReportStateListener` logs and persists the state changes. **(See [Event-Driven State Updates](#-3-event-driven-state-updates))**
 - The system now waits for report validation.
 
 ### **4. Validate Report (`/{reportId}/validate` - Validators Only)**
@@ -127,7 +127,7 @@ This endpoint validates or refuses the report based on a boolean flag. It return
     - Fetch the user and check their **VALIDATOR** role.
 - Calls `workflowService` to complete a BPMN user task.
 - The process moves through an **exclusive gateway** that checks the `isApproved` variable to decide if the report is **approved or refused**.
-- **End events** in BPMN (with execution listeners) notify the system, log, and persist data. **(See [Event-Driven State Updates](#3-event-driven-state-updates))**
+- **End events** in BPMN (with execution listeners) notify the system, log, and persist data. **(See [Event-Driven State Updates](#-3-event-driven-state-updates))**
 
 ---
 
