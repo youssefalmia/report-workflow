@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.*;
 import io.swagger.v3.oas.annotations.responses.*;
 import io.swagger.v3.oas.annotations.security.*;
 import io.swagger.v3.oas.annotations.tags.*;
+import jakarta.validation.*;
 import lombok.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,7 @@ public class ReportController {
     /**
      * Starts a new report workflow.
      *
-     * @param title The title of the report.
+     * @param request start workflow request containing the title of the report.
      * @return The created report DTO.
      */
     @PostMapping("/start")
@@ -43,9 +44,9 @@ public class ReportController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<ApiResponse<ReportDTO>> createReportAndStartWorkflow(@RequestParam String title) {
+    public ResponseEntity<ApiResponse<ReportDTO>> createReportAndStartWorkflow(@Valid @RequestBody CreateReportRequest request) {
         Long userId = userContext.getAuthenticatedUserId(); // Extract userId from SecurityContext
-        ReportDTO reportDTO = reportService.startReportWorkflow(title, userId);
+        ReportDTO reportDTO = reportService.startReportWorkflow(request.getTitle(), userId);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>("Report created successfully", reportDTO));

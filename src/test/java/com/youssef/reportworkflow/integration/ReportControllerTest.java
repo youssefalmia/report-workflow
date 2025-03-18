@@ -61,8 +61,8 @@ class ReportControllerTest {
 
         // When & Then: Call endpoint and verify response
         mockMvc.perform(post("/api/v1/reports/start")
-                        .param("title", title)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\": \"" + title + "\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.message").value("Report created successfully"))
                 .andExpect(jsonPath("$.data.id").value(reportId))
@@ -222,7 +222,8 @@ class ReportControllerTest {
     @WithMockUser(username = "testUser", roles = "OWNER")
     void createReportAndStartWorkflow_ShouldReturn400_WhenTitleIsMissing() throws Exception {
         mockMvc.perform(post("/api/v1/reports/start")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
                 .andExpect(status().isBadRequest());
     }
 

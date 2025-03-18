@@ -7,6 +7,7 @@ import lombok.extern.slf4j.*;
 import org.springframework.http.*;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.*;
+import org.springframework.web.bind.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.*;
@@ -90,6 +91,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleNoActiveTask(NoActiveTaskForReportException ex, HttpServletRequest request) {
         log.error("No active task found for report: {}", ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN, request);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        String errorMessage = ex.getBindingResult().getFieldError().getDefaultMessage();
+        return buildErrorResponse(errorMessage, HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(Exception.class)
