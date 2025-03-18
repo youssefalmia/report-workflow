@@ -48,9 +48,9 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     private String getRequiredRoleFromRequest(HttpServletRequest request) {
         String path = request.getRequestURI();
-        if (path.startsWith("/api/v1/reports/create") || path.startsWith("/api/v1/reports/start")) return "ROLE_OWNER";
-        if (path.startsWith("/api/v1/reports/review")) return "ROLE_REVIEWER";
-        if (path.startsWith("/api/v1/reports/validate")) return "ROLE_VALIDATOR";
+        if (path.endsWith("/create") || path.endsWith("/start")) return "ROLE_OWNER";
+        if (path.endsWith("/review")) return "ROLE_REVIEWER";
+        if (path.endsWith("/validate")) return "ROLE_VALIDATOR";
 
         return "UNKNOWN";
     }
